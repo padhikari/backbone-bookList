@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset ="utf-8">
+	<title>Backbone - Book List</title>
+	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
+</head>
+<body>
+<div class ="container">
+	<h1>Book List</h1>
+	<hr  />
+	<div class="page">
+		<button id="add-book">Add Book</button>
+
+		<ul id="book-list"> </ul>
+	<div>	
+
+</div>
+
+<script src="./js/jquery-1.11.0.js"></script>
+
+<script src="./js/underscore.js"></script>
+<script src="./js/backbone.js"></script>
+<script src ="./js/backbone.localStorage-min.js"></script>
+
+
+<script>
+
+	var Book = Backbone.Model.extend({
+    name: null
+});
+
+var Books = Backbone.Collection.extend({
+    model: Book,
+    localStorage: new Backbone.LocalStorage("book-list")
+});
+
+var BookView = Backbone.View.extend({
+    tagName: 'li',
+    className: 'nice',
+    initialize: function() {
+        _.bindAll(this, 'render');
+        this.model.bind('change', this.render);
+    },
+    render: function(model) {
+        this.$el.html('<span class="book" style="color:blue">' + this.model.get('name') + '</span>');
+        return this;
+    }
+});
+
+window.AppView = Backbone.View.extend({
+    el: $(".page"),
+    events: {
+        "click #add-book": "showPrompt"
+    },
+
+    initialize: function() {
+        _.bindAll(this, 'render', 'showPrompt');
+        this.collection = new Books();
+        this.collection.bind('add', this.render);
+        this.collection.bind('reset', this.render);
+        this.collection.fetch();
+    },
+
+    showPrompt: function() {
+        var book_name = prompt("what is your favorite book?");
+        var book_model = new Book({
+            name: book_name
+        });
+        
+        this.collection.add(book_model);
+        book_model.save();
+    },
+
+    render: function() {
+        var $list = this.$('#book-list');
+        $list.empty();
+        this.collection.each(function(m) {
+            var newBook = new BookView({ model: m });
+            $list.append(newBook.render().el);
+        });
+        return this; 
+    }
+});
+var appview = new AppView();
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
